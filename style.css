@@ -1,0 +1,35 @@
+
+body {
+	background-color: #111122;
+}
+
+div#score {
+	top:  5px;
+	left: 20px;
+	position: absolute;
+	font-family: 'monospace';
+	font-size: 25px;
+	color: #FFFFFF;
+}
+
+input#you {
+	top:  5px;
+	left: 450px;
+	position: absolute;
+	height: 24px;
+	font-family: 'monospace';
+	font-size: 16px;
+	text-align: center;
+	color: #FFFFFF;
+	background-color: black;
+	border-color: white;
+}
+
+canvas {
+	top:  35px;
+	left: 20px;
+	position: absolute;
+	background-color: black;
+	border: 1px dotted #AAAAAA;
+}
+
