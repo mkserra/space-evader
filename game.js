@@ -53,7 +53,7 @@ export const main = function()
 	gc.font = '60px monospace';
 	gc.textAlign = 'center';
 	gc.strokeStyle = 'rgb(225, 225, 225)';
-	gc.strokeText('USE NUMPAD KEYS,', XRES / 2, YRES / 2.3);
+	gc.strokeText('USE NUMPAD, GAMEPAD,', XRES / 2, YRES / 2.3);
 	gc.strokeText('OR MOUSE TO PLAY', XRES / 2, YRES / 1.8);
 
 	$('#canvas').click(clickHandler);
