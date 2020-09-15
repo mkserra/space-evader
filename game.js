@@ -6,7 +6,8 @@ document.body.style.zoom = 1.0;
 const XRES  = 1024;
 const YRES  = 576;
 const ARC_E = 0.01;
-const ARMS  = [];
+
+var arms = [];
 
 var gamePad;  // support optional gamepad controller
 
@@ -99,10 +100,10 @@ function animate()
 		STARS.map(function(s) { s.move() });
 		STARS.map(function(s) { s.draw() });
 
-		ARMS.map(function(a) { a.move() });
-		ARMS.map(function(a) { a.draw() });
+		arms.map(function(a) { a.move() });
+		arms.map(function(a) { a.draw() });
 
-		ARMS.map(function(a)  // weapon hit?
+		arms.map(function(a)  // weapon hit?
 		{
 			if (ship.hull() < 1)   // game over
 			{
@@ -167,1206 +168,1214 @@ function animate()
 
 function gameOver()
 {
-      ended = true;
+	ended = true;
 
-      var points = Math.round(score / 25);
-      var player = $('#you').val();
+	var points = Math.round(score / 25);
+	var player = $('#you').val();
 
-      var as = range(0.25, 1,  0.015);
-      var bs = range(1, 0.25, -0.015);
-      var a  = as;
-      var i  = 0;
+	var as = range(0.25, 1,  0.015);
+	var bs = range(1, 0.25, -0.015);
+	var a  = as;
+	var i  = 0;
 
-      var showScores = function(scores)
-      {
-        gamepadListener();
+	var showScores = function(scores)
+	{
+		gamepadListener();
 
-        gc.clearRect(0, 0, XRES, YRES);
-        gc.font = '60px monospace';
-        gc.strokeText('HIGH SCORES', XRES / 2, 75);
+		gc.clearRect(0, 0, XRES, YRES);
+		gc.font = '60px monospace';
+		gc.strokeText('HIGH SCORES', XRES / 2, 75);
 
-        if (i == as.length - 1)
-        {
-          i = 0;
-          a = a == as ? bs : as;
-        }
-        gc.strokeStyle = 'rgba(255, 255, 255, ' + a[++i] + ')';
-        gc.font = '30px monospace';
+		if (i == as.length - 1)
+		{
+			i = 0;
+			a = a == as ? bs : as;
+		}
+		gc.strokeStyle = 'rgba(255, 255, 255, ' + a[++i] + ')';
+		gc.font = '30px monospace';
 
-        var f = function(s)
-        {
-          var ss = s.split(',');
-          return ss[1] + ': ' + ss[0];
-        };
-        var ss = scores.split('\n');
+		var f = function(s)
+		{
+			var ss = s.split(',');
+			return ss[1] + ': ' + ss[0];
+		};
+		var ss = scores.split('\n');
 
-        ss = ss.sort(function(a,b)
-        {
-          var f = parseInt;
-          return f(a) == f(b) ? 0 : (f(a) < f(b) ? 1 : -1);
-        }).map(f);
+		ss = ss.sort(function(a,b)
+		{
+			var f = parseInt;
+			return f(a) == f(b) ? 0 : (f(a) < f(b) ? 1 : -1);
+		}).map(f);
 
-        for (let i = 0; i < ss.length - 1; i++)
-        {
-          gc.strokeText(ss[i], XRES / 2, 150 + 50 * i);
-        }
-      };
+		for (let i = 0; i < ss.length - 1; i++)
+		{
+			gc.strokeText(ss[i], XRES / 2, 150 + 50 * i);
+		}
+	};
 
-      var writeCB = function(msg)
-      {
-        $.get(URL + 'evader-scores', function(data)
-        {
-          setInterval(showScores(data), 1000 / 30);
-        });
-      };
-      $.get(URL + 'put-evader-score/' + points + '/'
-        + player, writeCB);
+	var writeCB = function(msg)
+	{
+		$.get(URL + 'evader-scores', function(data)
+		{
+			setInterval(showScores(data), 1000 / 30);
+		});
+	};
+	$.get(URL + 'put-evader-score/' + points + '/' + player, writeCB);
 }
 
-//--------------------------------------------------------
+//--------------------------------------------------------------
 
 function keyHandler(e)
 {
-      pID = !pID ? setInterval(runLoop, 1000 / 30) : pID;
+	pID = !pID ? setInterval(runLoop, 1000 / 30) : pID;
 
-      if (ended)
-      {
-        window.location.reload();
-      }
-      var angles = {
-        '3': 315, '9': 225,
-        '8': 180, '7': 135,
-        '4': 90 , '1': 45,
-        '2': 360, '6': 270
-      };
-      var c = String.fromCharCode(e.which);
+	if (ended)
+	{
+		window.location.reload();
+	}
+	var angles = {
+		'3': 315, '9': 225,
+		'8': 180, '7': 135,
+		'4': 90 , '1': 45,
+		'2': 360, '6': 270
+	};
+	var c = String.fromCharCode(e.which);
 
-      switch (c)
-      {
-        case '7': ship.setU(vec(-1, -1));  break;
-        case '8': ship.setU(vec( 0, -1));  break;
-        case '9': ship.setU(vec( 1, -1));  break;
-        case '4': ship.setU(vec(-1,  0));  break;
-        case '6': ship.setU(vec( 1,  0));  break;
-        case '1': ship.setU(vec(-1,  1));  break;
-        case '2': ship.setU(vec( 0,  1));  break;
-        case '3': ship.setU(vec( 1,  1));  break;
-        // case 'f': setFullScreen();
-      }
-      ship.align(angles[c]);
+	switch (c)
+	{
+		case '7': ship.setU(vec(-1, -1));  break;
+		case '8': ship.setU(vec( 0, -1));  break;
+		case '9': ship.setU(vec( 1, -1));  break;
+		case '4': ship.setU(vec(-1,  0));  break;
+		case '6': ship.setU(vec( 1,  0));  break;
+		case '1': ship.setU(vec(-1,  1));  break;
+		case '2': ship.setU(vec( 0,  1));  break;
+		case '3': ship.setU(vec( 1,  1));  break;
+		// case 'f': setFullScreen();
+	}
+	ship.align(angles[c]);
 }
 
-    //----------------------------------------------------
+//-----------------------------------------------------
 
 function clickHandler(e)
 {
-      pID = !pID ? setInterval(runLoop, 1000 / 30) : pID;
+	pID = !pID ? setInterval(runLoop, 1000 / 30) : pID;
 
-      if (ended)
-      {
-        window.location.reload();
-      }
-      var u = vec(e.pageX - 20, e.pageY - 20);
-      var c = centroid(ship.ps());
+	if (ended)
+	{
+		window.location.reload();
+	}
+	var u = vec(e.pageX - 20, e.pageY - 20);
+	var c = centroid(ship.ps());
 
-      ship.setU(u.sub(c).norm());
-      ship.align(ship.heading());
-    }
+	ship.setU(u.sub(c).norm());
+	ship.align(ship.heading());
+}
 
-    function gamepadListener()
-    {
-      if (navigator.getGamepads && navigator.getGamepads()[0])
-      {
-        gamePad = navigator.getGamepads()[0];
-      }
-      if (gamePad != undefined)
-      {
-        if (ended)  // any button restarts game
-        {
-          var anyKey = gamePad.buttons.map(function (b)
-          {
-            return b.pressed;
+function gamepadListener()
+{
+	if (navigator.getGamepads && navigator.getGamepads()[0])
+	{
+		gamePad = navigator.getGamepads()[0];
+	}
+	if (gamePad != undefined)
+	{
+		if (ended)  // any button restarts game
+		{
+			var anyKey = gamePad.buttons.map(function (b)
+			{
+				return b.pressed;
 
-          }).reduce(function(a,b) { return a || b; });
+			}).reduce(function(a,b) { return a || b; });
 
-          if (anyKey)
-          {
-            window.location.reload();
-          }
-        }
-        if (!zero(gamePad.axes[4]) || !zero(gamePad.axes[5]))
-        {
-          ship.setU(vec(gamePad.axes[4], gamePad.axes[5]));
-          ship.align(ship.heading());
-        }
-      }
+			if (anyKey)
+			{
+				window.location.reload();
+			}
+		}
+		if (!zero(gamePad.axes[4]) || !zero(gamePad.axes[5]))
+		{
+			ship.setU(vec(gamePad.axes[4], gamePad.axes[5]));
+			ship.align(ship.heading());
+		}
+	}
 }
 
 //-----------------------------------------
 
 function drawShip()
 {
-      var a = ship.ps()[0];
-      var b = ship.ps()[1];
-      var c = ship.ps()[2];
+	var a = ship.ps()[0];
+	var b = ship.ps()[1];
+	var c = ship.ps()[2];
 
-      gc.lineWidth   = 2;
-      gc.strokeStyle = ship.hitTime-- > 0 ? 
-        'rgb(255, 35, 35)' : 'rgb(225, 225, 225)';
+	gc.lineWidth   = 2;
+	gc.strokeStyle = ship.hitTime-- > 0 ? 
+		'rgb(255, 35, 35)' : 'rgb(225, 225, 225)';
 
-      gc.beginPath();
-      gc.moveTo(a.x, a.y);
-      gc.lineTo(b.x, b.y);
-      gc.lineTo(c.x, c.y);
-      gc.lineTo(a.x, a.y);
-      gc.stroke();
-      gc.closePath();
+	gc.beginPath();
+	gc.moveTo(a.x, a.y);
+	gc.lineTo(b.x, b.y);
+	gc.lineTo(c.x, c.y);
+	gc.lineTo(a.x, a.y);
+	gc.stroke();
+	gc.closePath();
 
-      var ic  = ship.incircle();
-      var red = 255 - ship.hull();
+	var ic  = ship.incircle();
+	var red = 255 - ship.hull();
 
-      gc.strokeStyle = 'rgb(' + red + ', 100, 100)';
-      gc.beginPath();
-      gc.arc(ic.x, ic.y, ic.r, 0, Math.PI*2);
-      gc.closePath();
-      gc.stroke();
+	gc.strokeStyle = 'rgb(' + red + ', 100, 100)';
+	gc.beginPath();
+	gc.arc(ic.x, ic.y, ic.r, 0, Math.PI*2);
+	gc.closePath();
+	gc.stroke();
 
-      gc.fillStyle = 'rgb(' + red + ', 100, 100)';
-      gc.beginPath();
-      gc.arc(ic.x, ic.y, ic.r / 2, 0, Math.PI*2);
-      gc.closePath();
-      gc.fill();
+	gc.fillStyle = 'rgb(' + red + ', 100, 100)';
+	gc.beginPath();
+	gc.arc(ic.x, ic.y, ic.r / 2, 0, Math.PI*2);
+	gc.closePath();
+	gc.fill();
 
-      if (ship.cloaked())
-      {
-        var cc = ship.circumcircle();
+	if (ship.cloaked())
+	{
+		var cc = ship.circumcircle();
 
-        gc.fillStyle = 'rgba(200, 100, 100, 0.35)';
-        gc.beginPath();
-        gc.arc(cc.x, cc.y, cc.r, 0, Math.PI*2);
-        gc.closePath();
-        gc.fill();
-        gc.strokeStyle = 'rgba(200, 50, 50, 1.0)';
-        gc.beginPath();
-        gc.arc(cc.x, cc.y, cc.r + 1, 0, Math.PI*2);
-        gc.closePath();
-        gc.stroke();
-      }
-      else if (ship.shielded())
-      {
-        var cc = ship.circumcircle();
+		gc.fillStyle = 'rgba(200, 100, 100, 0.35)';
+		gc.beginPath();
+		gc.arc(cc.x, cc.y, cc.r, 0, Math.PI*2);
+		gc.closePath();
+		gc.fill();
+		gc.strokeStyle = 'rgba(200, 50, 50, 1.0)';
+		gc.beginPath();
+		gc.arc(cc.x, cc.y, cc.r + 1, 0, Math.PI*2);
+		gc.closePath();
+		gc.stroke();
+	}
+	else if (ship.shielded())
+	{
+		var cc = ship.circumcircle();
 
-        gc.fillStyle = 'rgba(100, 100, 200, 0.35)';
-        gc.beginPath();
-        gc.arc(cc.x, cc.y, cc.r, 0, Math.PI*2);
-        gc.closePath();
-        gc.fill();
-        gc.strokeStyle = 'rgba(75, 75, 250, 1.0)';
-        gc.beginPath();
-        gc.arc(cc.x, cc.y, cc.r + 1, 0, Math.PI*2);
-        gc.closePath();
-        gc.stroke();
-      }
+		gc.fillStyle = 'rgba(100, 100, 200, 0.35)';
+		gc.beginPath();
+		gc.arc(cc.x, cc.y, cc.r, 0, Math.PI*2);
+		gc.closePath();
+		gc.fill();
+		gc.strokeStyle = 'rgba(75, 75, 250, 1.0)';
+		gc.beginPath();
+		gc.arc(cc.x, cc.y, cc.r + 1, 0, Math.PI*2);
+		gc.closePath();
+		gc.stroke();
+	}
 }
 
 function drawBonus(p, rgb)
 {
-      for (let i = 0; i < 5; i++)
-      {
-        var a = parseFloat(i * 0.1 + 0.15);
+	for (let i = 0; i < 5; i++)
+	{
+		let a = parseFloat(i * 0.1 + 0.15);
 
-        gc.fillStyle = 'rgba(255, 255, 255, ' + a + ')';
-        gc.beginPath();
-        gc.arc(p.x, p.y, 3 * (5 - i), 0, Math.PI*2);
-        gc.closePath();
-        gc.fill();
-      }
-      gc.fillStyle = rgbStr(rgb);
-      gc.beginPath();
-      gc.arc(p.x, p.y, 8, 0, Math.PI*2);
-      gc.closePath();
-      gc.fill();
+		gc.fillStyle = 'rgba(255, 255, 255, ' + a + ')';
+		gc.beginPath();
+		gc.arc(p.x, p.y, 3 * (5 - i), 0, 2 * Math.PI);
+		gc.closePath();
+		gc.fill();
+	}
+	gc.fillStyle = rgbStr(rgb);
+	gc.beginPath();
+	gc.arc(p.x, p.y, 8, 0, 2 * Math.PI);
+	gc.closePath();
+	gc.fill();
 }
 
-    //---------------------------------------------
+//---------------------------------------------
 
 function rand(m, n)  // interval [n, m)
 {
-      n = n === undefined ? 0 : n;
+	n = n === undefined ? 0 : n;
 
-      return Math.floor(Math.random() * (n - m)) + m;
+	return Math.floor(Math.random() * (n - m)) + m;
 }
 
 function randSign()
 {
-      return Math.random() < 0.5 ? 1 : -1;
+	return Math.random() < 0.5 ? 1 : -1;
 }
 
 //-----------------------------------------------
 
 function sniper(curve, inaccuracy)
 {
-      var i   = 1;
-      var b   = true;
-      var ps  = range(0, 1, 0.0025).map(fix(casteljau, curve));
-      var r   = 3;
-      var p   = vec(ps[0].x, ps[0].y);
-      var rnd = rand(80, 120);
+	var i   = 1;
+	var b   = true;
+	var ps  = range(0, 1, 0.0025).map(fix(casteljau, curve));
+	var r   = 3;
+	var p   = vec(ps[0].x, ps[0].y);
+	var rnd = rand(80, 120);
 
-      var move = function()
-      {
-        b = (i < 1 || i == ps.length - 1) ? !b : b;
-        i = i + (b ? 1 : -1);
-        p = vec(ps[i].x, ps[i].y);
+	var move = function()
+	{
+		b = (i < 1 || i == ps.length - 1) ? !b : b;
+		i = i + (b ? 1 : -1);
+		p = vec(ps[i].x, ps[i].y);
 
-        if (--rnd < 1 && !ship.cloaked())  // beam attack
-        {
-          beam(p, 0.1, inaccuracy);
-          sound('torpedo');
-          rnd = rand(80, 120);
-        }
-      };
+		if (--rnd < 1 && !ship.cloaked())  // beam attack
+		{
+			beam(p, 0.1, inaccuracy);
+			sound('torpedo');
 
-      var draw = function()
-      {
-        gc.strokeStyle = 'rgb(255, 255, 0)';
-        gc.beginPath();
-        gc.arc(p.x, p.y, r, 0, Math.PI * 2);
-        gc.stroke();
-      }
+			rnd = rand(80, 120);
+		}
+	};
 
-      return {
-        ps:   function() { return ps },
-        r:    function() { return r },
-        p:    function() { return p },
-        rnd:  function() { return rnd },
-        move: function() { move() },
-        draw: function() { draw() }
-      };
+	var draw = function()
+	{
+		gc.strokeStyle = 'rgb(255, 255, 0)';
+		gc.beginPath();
+		gc.arc(p.x, p.y, r, 0, Math.PI * 2);
+		gc.stroke();
+	}
+
+	return {
+		ps:   function() { return ps },
+		r:    function() { return r },
+		p:    function() { return p },
+		rnd:  function() { return rnd },
+		move: function() { move() },
+		draw: function() { draw() }
+	};
 }
 
 function temple(ps)
 {
-      var i = 1;
-      var b = true;
-      var r = 3;
-      var p = vec(ps[0].x, ps[0].y);
+	var i = 1;
+	var b = true;
+	var r = 3;
+	var p = vec(ps[0].x, ps[0].y);
 
-      var move = function()
-      {
-        b = (i < 1 || i == ps.length - 1) ? !b : b;
-        i = i + (b ? 1 : -1);
-        p = vec(ps[i].x, ps[i].y);
+	var move = function()
+	{
+		b = (i < 1 || i == ps.length - 1) ? !b : b;
+		i = i + (b ? 1 : -1);
+		p = vec(ps[i].x, ps[i].y);
 
-        var rgb = rgbGen(170, 200, 170, 200);
-        bombs(p, 2, 0.5, 1, 4, 1, 0.05, 1, rgb);
-      };
+		var rgb = rgbGen(170, 200, 170, 200);
 
-      var draw = function()
-      {
-        gc.fillStyle = 'rgba(255, 255, 0, 0.6)';
-        gc.beginPath();
-        gc.arc(p.x, p.y, r, 0, Math.PI * 2);
-        gc.fill();
-        gc.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-        gc.beginPath();
-        gc.arc(p.x, p.y, r + 1, 0, Math.PI * 2);
-        gc.stroke();
-      }
+		bombs(p, 2, 0.5, 1, 4, 1, 0.05, 1, rgb);
+	};
 
-      return {
-        ps:   function() { return ps },
-        r:    function() { return r },
-        p:    function() { return p },
-        rnd:  function() { return rnd },
-        move: function() { move() },
-        draw: function() { draw() }
-      };
+	var draw = function()
+	{
+		gc.fillStyle = 'rgba(255, 255, 0, 0.6)';
+		gc.beginPath();
+		gc.arc(p.x, p.y, r, 0, Math.PI * 2);
+		gc.fill();
+		gc.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+		gc.beginPath();
+		gc.arc(p.x, p.y, r + 1, 0, Math.PI * 2);
+		gc.stroke();
+	}
+
+	return {
+		ps:   function() { return ps },
+		r:    function() { return r },
+		p:    function() { return p },
+		rnd:  function() { return rnd },
+		move: function() { move() },
+		draw: function() { draw() }
+	};
 }
 
 function orbitoid(curve)
 {
-      var i    = 1;
-      var b    = true;
-      var ps   = justify(curve, ARC_E).map(fix(casteljau, curve));
-      var p    = vec(ps[0].x, ps[0].y);
-      var r    = 5;
-      var ammo = 0;
-      var rnd  = rand(3, 6);
-      var prnd = rand(40, 80);
+	var i    = 1;
+	var b    = true;
+	var ps   = justify(curve, ARC_E).map(fix(casteljau, curve));
+	var p    = vec(ps[0].x, ps[0].y);
+	var r    = 5;
+	var ammo = 0;
+	var rnd  = rand(3, 6);
+	var prnd = rand(40, 80);
 
-      var move = function()
-      {
-        b = (i < 1 || i == ps.length - 1) ? !b : b;
-        i = i + (b ? 1 : -1);
+	var move = function()
+	{
+		b = (i < 1 || i == ps.length - 1) ? !b : b;
+		i = i + (b ? 1 : -1);
 
-        if (!ship.cloaked() && i % prnd == 0)  // burst attack
-        {
-          ammo = range(0.02, 0.06, 0.01);
-          prnd = rand(40, 80);
-          rnd  = rand(3, 6);
-        }
-        if (ammo.length > 0 && i % rnd == 0)
-        {
-          orb(p, (ammo.shift() / 2) + ((20 - ammo.length) / 2000));
-          sound('orb');
-        }
-        p = vec(ps[i].x, ps[i].y);
-      };
+		if (!ship.cloaked() && i % prnd == 0)  // burst attack
+		{
+			ammo = range(0.02, 0.06, 0.01);
+			prnd = rand(40, 80);
+			rnd  = rand(3, 6);
+		}
+		if (ammo.length > 0 && i % rnd == 0)
+		{
+			orb(p, (ammo.shift() / 2) + ((20 - ammo.length) / 2000));
+			sound('orb');
+		}
+		p = vec(ps[i].x, ps[i].y);
+	};
 
-      var draw = function()
-      {
-        gc.strokeStyle = 'rgb(255, 125, 125)';
-        gc.beginPath();
-        gc.arc(p.x, p.y, r, 0, Math.PI * 2);
-        gc.stroke();
-      };
+	var draw = function()
+	{
+		gc.strokeStyle = 'rgb(255, 125, 125)';
+		gc.beginPath();
+		gc.arc(p.x, p.y, r, 0, Math.PI * 2);
+		gc.stroke();
+	};
 
-      return {
-        ps:   function() { return ps },
-        r:    function() { return r },
-        p:    function() { return p },
-        ammo: function() { return ammo },
-        rnd:  function() { return rnd },
-        move: function() { move() },
-        draw: function() { draw() }
-      };
+	return {
+		ps:   function() { return ps },
+		r:    function() { return r },
+		p:    function() { return p },
+		ammo: function() { return ammo },
+		rnd:  function() { return rnd },
+		move: function() { move() },
+		draw: function() { draw() }
+	};
 }
 
 function bomber(curve, attack)
 {
-      var i   = 1;
-      var b   = true;
-      var ps  = range(0, 1, 0.0025).map(fix(casteljau, curve));
-      var r   = 8;
-      var p   = vec(ps[0].x, ps[0].y);
-      var rnd = rand(150, 250);
-      var atk = 0;
+	var i   = 1;
+	var b   = true;
+	var ps  = range(0, 1, 0.0025).map(fix(casteljau, curve));
+	var r   = 8;
+	var p   = vec(ps[0].x, ps[0].y);
+	var rnd = rand(150, 250);
+	var atk = 0;
 
-      var move = function()
-      {
-        b = (i < 1 || i == ps.length - 1) ? !b : b;
-        i = i + (b ? 1 : -1);
-        p = vec(ps[i].x, ps[i].y);
+	var move = function()
+	{
+		b = (i < 1 || i == ps.length - 1) ? !b : b;
+		i = i + (b ? 1 : -1);
+		p = vec(ps[i].x, ps[i].y);
 
-        if (--rnd == 0)  // cluster bomb attack
-        {
-          rnd = rand(150, 250);
-          atk = 32;
+		if (--rnd == 0)  // cluster bomb attack
+		{
+			rnd = rand(150, 250);
+			atk = 32;
 
-          attack(p);
-          sound('bomb');
-        }
-      };
+			attack(p);
+			sound('bomb');
+		}
+	};
 
-      var draw = function()
-      {
-        var rad = (0 < (atk--)) ? r * 2 : r;
+	var draw = function()
+	{
+		let rad = (0 < (atk--)) ? r * 2 : r;
 
-        gc.fillStyle = 'rgba(255, 255, 50, 0.8)';
-        gc.beginPath();
-        gc.arc(p.x, p.y, rad, 0, Math.PI * 2);
-        gc.fill();
-        gc.fillStyle = 'rgba(175, 10, 5, 0.8)';
-        gc.beginPath();
-        gc.arc(p.x, p.y, rad * 0.9, 0, Math.PI * 2);
-        gc.fill();
-        gc.fillStyle = 'rgba(50, 0, 0, 0.8)';
-        gc.beginPath();
-        gc.arc(p.x, p.y, rad * 0.4, 0, Math.PI * 2);
-        gc.fill();
-      };
+		gc.fillStyle = 'rgba(255, 255, 50, 0.8)';
+		gc.beginPath();
+		gc.arc(p.x, p.y, rad, 0, Math.PI * 2);
+		gc.fill();
+		gc.fillStyle = 'rgba(175, 10, 5, 0.8)';
+		gc.beginPath();
+		gc.arc(p.x, p.y, rad * 0.9, 0, Math.PI * 2);
+		gc.fill();
+		gc.fillStyle = 'rgba(50, 0, 0, 0.8)';
+		gc.beginPath();
+		gc.arc(p.x, p.y, rad * 0.4, 0, Math.PI * 2);
+		gc.fill();
+	};
 
-      return {
-        ps:   function() { return ps },
-        r:    function() { return r  },
-        p:    function() { return p  },
-        move: function() {  move()   },
-        draw: function() {  draw()   }
-      };
+	return {
+		ps:   function() { return ps },
+		r:    function() { return r  },
+		p:    function() { return p  },
+		move: function() {  move()   },
+		draw: function() {  draw()   }
+	};
 }
 
 function blast1(p)
 {
-      bombs(p, 6, 0.5, 5, 100, 1.0, 0.01, 10,
-        rgbGen(235, 255, 50, 200));
+	bombs(p, 6, 0.5, 5, 100, 1.0, 0.01, 10,
+		rgbGen(235, 255, 50, 200));
 }
 
 function blast2(p)
 {
-      bombs(p, 1, 0.2, 10, 300, 1.0, 0.01, 30,
-        rgbGen(240, 255, 240, 255, 20, 40));
+	bombs(p, 1, 0.2, 10, 300, 1.0, 0.01, 30,
+		rgbGen(240, 255, 240, 255, 20, 40));
 }
 
 function makeShip()
 {
-      var u  = vec(0,0);  // heading vector
-      var s  = SHIP.s;    // speed
-      var d  = 0;         // initial angle
-      var ps = [
-        vec(XRES/2,  YRES/2),
-        vec(XRES/2 - SHIP.b(), YRES/2 - SHIP.h()),
-        vec(XRES/2 + SHIP.b(), YRES/2 - SHIP.h())
-      ];
-      var hull        = 255;
-      var cloakTime   = 0;
-      var shieldPower = 0;
-      var hitTime     = 0;
+	var u = vec(0,0);  // heading vector
+	var s = SHIP.s;    // speed
+	var d = 0;         // initial angle
 
-      var translate = function(x,y)
-      {
-        ps = ps.map(function(u)
-        {
-          return u.add(vec(x,y));
-        });
-      };
+	var ps = [
+		vec(XRES/2,  YRES/2),
+		vec(XRES/2 - SHIP.b(), YRES/2 - SHIP.h()),
+		vec(XRES/2 + SHIP.b(), YRES/2 - SHIP.h())
+	];
 
-      var circumcircle = function()
-      {
-        var a = ps[0];
-        var b = ps[1];
-        var c = ps[2];
+	var hull        = 255;
+	var cloakTime   = 0;
+	var shieldPower = 0;
+	var hitTime     = 0;
 
-        var m = ((a.x - c.x) * (a.x + c.x) 
-              + ( a.y - c.y) * (a.y + c.y)) / 2 * (b.y - c.y)
-              - ((b.x - c.x) * (b.x + c.x)
-              + ( b.y - c.y) * (b.y + c.y)) / 2 * (a.y - c.y);
+	var translate = function(x,y)
+	{
+		ps = ps.map(function(u)
+		{
+			return u.add(vec(x,y));
+		});
+	};
 
-        var n = ((b.x - c.x) * (b.x + c.x)
-              + ( b.y - c.y) * (b.y + c.y)) / 2 * (a.x - c.x)
-              - ((a.x - c.x) * (a.x + c.x)
-              + ( a.y - c.y) * (a.y + c.y)) / 2 * (b.x - c.x);
+	var circumcircle = function()
+	{
+		var a = ps[0];
+		var b = ps[1];
+		var c = ps[2];
 
-        var d = (a.x - c.x) * (b.y - c.y)
-              - (b.x - c.x) * (a.y - c.y);
+		var m = ((a.x - c.x) * (a.x + c.x) 
+			  + ( a.y - c.y) * (a.y + c.y)) / 2 * (b.y - c.y)
+			  - ((b.x - c.x) * (b.x + c.x)
+			  + ( b.y - c.y) * (b.y + c.y)) / 2 * (a.y - c.y);
 
-        var u = vec(m/d, n/d);
+		var n = ((b.x - c.x) * (b.x + c.x)
+			  + ( b.y - c.y) * (b.y + c.y)) / 2 * (a.x - c.x)
+			  - ((a.x - c.x) * (a.x + c.x)
+			  + ( a.y - c.y) * (a.y + c.y)) / 2 * (b.x - c.x);
 
-        return {
-          x: m / d,
-          y: n / d,
-          u: u,
-          r: dist(u, ps[0])
-        };
-      };
+		var d = (a.x - c.x) * (b.y - c.y)
+			  - (b.x - c.x) * (a.y - c.y);
 
-      var incircle = function()
-      {
-        var a = dist(ps[1], ps[2]);
-        var b = dist(ps[2], ps[0]);
-        var c = dist(ps[0], ps[1]);
-        var d = a + b + c;
-        var s = d / 2;
+		var u = vec(m/d, n/d);
 
-        return {
-          x: (a * ps[0].x + b * ps[1].x + c * ps[2].x) / d,
-          y: (a * ps[0].y + b * ps[1].y + c * ps[2].y) / d,
-          r: Math.sqrt((s-a) * (s-b) * (s-c) / s),
-          u: vec(this.x, this.y)
-        };
-      };
+		return {
+			x: m / d,
+			y: n / d,
+			u: u,
+			r: dist(u, ps[0])
+		};
+	};
 
-      var heading = function()
-      {
-        var r = Math.atan2(u.y, u.x);
-        return r * 180 / Math.PI + 270;
-      };
+	var incircle = function()
+	{
+		let a = dist(ps[1], ps[2]);
+		let b = dist(ps[2], ps[0]);
+		let c = dist(ps[0], ps[1]);
+		let d = a + b + c;
+		let s = d / 2;
 
-      var align = function(deg)
-      {
-        ps = rotate(ps, -d);
-        d  = deg ? deg : d;
-        ps = rotate(ps, d);
-        starFieldU = vec(ship.u().x, ship.u().y).mult(-1);
-      };
+		let x = (a * ps[0].x + b * ps[1].x + c * ps[2].x) / d;
+		let y = (a * ps[0].y + b * ps[1].y + c * ps[2].y) / d;
 
-      var move = function()
-      {
-        ps = ps.map(function(p)
-        {
-          return p.add(u.mult(s));
-        });
-        cloakTime = 0 < cloakTime ? cloakTime  - 1 : 0;
-      };
+		return {
+			x: x,
+			y: y,
+			r: Math.sqrt((s-a) * (s-b) * (s-c) / s),
+			u: vec(x, y)
+		};
+	};
 
-      var cloak = function()
-      {
-        cloakTime = 600;
-      };
+	var heading = function()
+	{
+		return Math.atan2(u.y, u.x) * 180 / Math.PI + 270;
+	};
 
-      var still = function()
-      {
-        return 0 == u.x && u.y == 0;
-      };
+	var align = function(deg)
+	{
+		ps = rotate(ps, -d);
+		d  = deg ? deg : d;
+		ps = rotate(ps, d);
 
-      return {
-        u:     function()        { return u },
-        ps:    function()        { return ps },
-        move:    function()      { move() },
-        setU:    function(v)     { u = v },
-        hull:    function()      { return hull },
-        still:   function()      { return still() },
-        cloak:   function()      { cloak() },
-        align:   function(d)     { align(d) },
-        shield:  function()      { return shieldPower },
-        heading:   function()    { return heading() },
-        cloaked:   function()    { return cloakTime  > 150 },
-        setHull:   function(n)   { hull = n },
-        shielded:  function()    { return shieldPower > 0 },
-        incircle:  function()    { return incircle() },
-        setShield: function(n)   { shieldPower = n },
-        circumcircle: function() { return circumcircle() },
-        translate: translate
-      };
+		starFieldU = vec(ship.u().x, ship.u().y).mult(-1);
+	};
+
+	var move = function()
+	{
+		ps = ps.map(function(p)
+		{
+			return p.add(u.mult(s));
+		});
+		cloakTime = 0 < cloakTime ? cloakTime  - 1 : 0;
+	};
+
+	var cloak = function()
+	{
+		cloakTime = 600;
+	};
+
+	var still = function()
+	{
+		return 0 == u.x && u.y == 0;
+	};
+
+	return {
+		u:     function()        { return u },
+		ps:    function()        { return ps },
+		move:    function()      { move() },
+		setU:    function(v)     { u = v },
+		hull:    function()      { return hull },
+		still:   function()      { return still() },
+		cloak:   function()      { cloak() },
+		align:   function(d)     { align(d) },
+		shield:  function()      { return shieldPower },
+		heading:   function()    { return heading() },
+		cloaked:   function()    { return cloakTime  > 150 },
+		setHull:   function(n)   { hull = n },
+		shielded:  function()    { return shieldPower > 0 },
+		incircle:  function()    { return incircle() },
+		setShield: function(n)   { shieldPower = n },
+		circumcircle: function() { return circumcircle() },
+		translate: translate
+	};
 }
 
 //------------------------------------------------------
 
 function beam(u, s, rad)  // u is the beam origin
 {
-      var v = centroid(ship.ps()).sub(u);
-      var w = u.add(v.mult(0.2));                // beam tip
-      var r = vec(rand(20, rad), rand(20, rad)); // accuracy
-      v     = v.add(vec(r.x * randSign(), r.y * randSign()));
+	var v = centroid(ship.ps()).sub(u);
+	var w = u.add(v.mult(0.2));                // beam tip
+	var r = vec(rand(20, rad), rand(20, rad)); // accuracy
 
-      var blocked = false;
+	v = v.add(vec(r.x * randSign(), r.y * randSign()));
 
-      var draw = function()
-      {
-        gc.lineWidth   = 3;
-        gc.strokeStyle = 'rgba(255, 255, 0, 0.8)';
-        gc.beginPath();
-        gc.moveTo(u.x, u.y);
-        gc.lineTo(w.x, w.y);
-        gc.closePath();
-        gc.stroke();
-      };
+	var blocked = false;
 
-      var move = function()
-      {
-        u = u.add(v.mult(s));
-        w = blocked ? w : u.add(v.mult(0.2));
-      };
+	var draw = function()
+	{
+		gc.lineWidth   = 3;
+		gc.strokeStyle = 'rgba(255, 255, 0, 0.8)';
+		gc.beginPath();
+		gc.moveTo(u.x, u.y);
+		gc.lineTo(w.x, w.y);
+		gc.closePath();
+		gc.stroke();
+	};
 
-      var hit = function()
-      {
-        if (blocked)
-        {
-          return false;
-        }
-        if (ship.shielded())
-        {
-          var cc = ship.circumcircle();
+	var move = function()
+	{
+		u = u.add(v.mult(s));
+		w = blocked ? w : u.add(v.mult(0.2));
+	};
 
-          if (distSquared(w, cc.u) < Math.pow(cc.r, 2))
-          {
-            blocked = true;
-            return false;
-          }
-        }
-        return inPgon(w, ship.ps());
-      }
+	var hit = function()
+	{
+		if (blocked)
+		{
+			return false;
+		}
+		if (ship.shielded())
+		{
+			var cc = ship.circumcircle();
 
-      var on = function()
-      {
-        if (blocked && distSquared(w, u) < 5)
-        {
-          return false;  // shield blocking animation done
-        }
-        return true;
-      }
+			if (distSquared(w, cc.u) < Math.pow(cc.r, 2))
+			{
+				blocked = true;
+				return false;
+			}
+		}
+		return inPgon(w, ship.ps());
+	}
 
-      ARMS.push({
-        u:  function() { return u },  // position
-        v:  function() { return v },  // velocity
-        s:  function() { return s },  // scalar
-        r: 2,
-        on: on,
-        draw: draw,
-        move: move,
-        hit: hit
-      });
+	var on = function()
+	{
+		if (blocked && distSquared(w, u) < 5)
+		{
+			return false;  // shield blocking animation done
+		}
+		return true;
+	}
+
+	arms.push({
+		u:  function() { return u },  // position
+		v:  function() { return v },  // velocity
+		s:  function() { return s },  // scalar
+		r: 2,
+		on: on,
+		draw: draw,
+		move: move,
+		hit: hit
+	});
 }
 
 function orb(u, s)
 {
-      var v = centroid(ship.ps()).sub(u);
-      var a = 1.0;
+	var v = centroid(ship.ps()).sub(u);
+	var a = 1.0;
 
-      var draw = function()
-      {
-        gc.fillStyle = 'rgba(0, 255, 0,' + a + ')';
-        gc.beginPath();
-        gc.arc(u.x, u.y, 2.5, 0, Math.PI*2);
-        gc.closePath();
-        gc.fill();
-      };
+	var draw = function()
+	{
+		gc.fillStyle = 'rgba(0, 255, 0,' + a + ')';
+		gc.beginPath();
+		gc.arc(u.x, u.y, 2.5, 0, Math.PI*2);
+		gc.closePath();
+		gc.fill();
+	};
 
-      var move = function()
-      {
-        u  = u.add(v.mult(s));
-        a -= 0.008;
-      };
+	var move = function()
+	{
+		u  = u.add(v.mult(s));
+		a -= 0.008;
+	};
 
-      var hit = function()
-      {
-        return inPgon(u, ship.ps());
-      };
+	var hit = function()
+	{
+		return inPgon(u, ship.ps());
+	};
 
-      var on = function()
-      {
-        if (ship.shielded())
-        {
-          var cc = ship.circumcircle();
+	var on = function()
+	{
+		if (ship.shielded())
+		{
+			var cc = ship.circumcircle();
 
-          if (distSquared(u, cc.u) < Math.pow(cc.r, 2))
-          {
-            return false;
-          }
+			if (distSquared(u, cc.u) < Math.pow(cc.r, 2))
+			{
+				return false;
+			}
         }
-        return a > 0;
-      };
+		return a > 0;
+	};
 
-      ARMS.push({
-        u:  function() { return u },  // position
-        v:  function() { return v },  // velocity
-        s:  function() { return s },  // scalar
-        r: 2,
-        on: on,
-        draw: draw,
-        move: move,
-        hit: hit
-      });
+	arms.push({
+		u:  function() { return u },  // position
+		v:  function() { return v },  // velocity
+		s:  function() { return s },  // scalar
+		r: 2,
+		on: on,
+		draw: draw,
+		move: move,
+		hit: hit
+	});
 }
 
 function bombs(u, r, rA, d0, d1, a, dA, n, rgbG)
 {
-      var v    = vec(0,0);
-      var ps   = [];
-      var bs   = [];
-      var rgbs = []; 
+	var v    = vec(0,0);
+	var ps   = [];
+	var bs   = [];
+	var rgbs = []; 
 
-      for (let i = 0; i < n; i++)
-      {
-        var w = vec(rand(d0, d1), rand(d0, d1));
-        w   = vec(w.x * randSign(), w.y * randSign());
+	for (let i = 0; i < n; i++)
+	{
+		var w = vec(rand(d0, d1), rand(d0, d1));
+
+		w = vec(w.x * randSign(), w.y * randSign());
         
-        while (dist(u, u.add(w)) > d1)
-        {
-          w = vec(rand(d0, d1), rand(d0, d1));
-          w = vec(w.x * randSign(), w.y * randSign());
-        }
-        rgbs.push(rgbG());
-        ps.push(u.add(w));
-      }
+		while (dist(u, u.add(w)) > d1)
+		{
+			w = vec(rand(d0, d1), rand(d0, d1));
+			w = vec(w.x * randSign(), w.y * randSign());
+		}
+		rgbs.push(rgbG());
+		ps.push(u.add(w));
+	}
 
-      var move = function()
-      {
-        a -= dA;
-        r += rA;
-      };
+	var move = function()
+	{
+		a -= dA;
+		r += rA;
+	};
 
-      var hit = function()
-      {
-        var cs = bs.filter(function(b)
-        {
-          var us = ship.ps().map(function(u)
-          {
-            return { x: u.x, y: u.y };
-          });
+	var hit = function()
+	{
+		var cs = bs.filter(function(b)
+		{
+			var us = ship.ps().map(function(u)
+			{
+				return { x: u.x, y: u.y };
+			});
 
-          return dist(us[0], b) < r
-              || dist(us[1], b) < r
-              || dist(us[2], b) < r
-              || dist(ship.incircle().u, b) < r;
-        });
-        return cs.length > 0;
-      };
+			return dist(us[0], b) < r
+				|| dist(us[1], b) < r
+				|| dist(us[2], b) < r
+				|| dist(ship.incircle().u, b) < r;
+		});
+		return cs.length > 0;
+	};
 
-      ARMS.push({
-        r:    r,
-        move: move,
-        hit:  hit,
-        u:    function() { return u },  // position
-        v:    function() { return v },  // velocity
-        s:    function() { return s },  // scalar
-        a:    function() { return a },  // scalar
-        on:   function() { return a > 0 },
-        draw: function()
-        {
-          if (0 < ps.length && rand(1, 50) % 3 == 0)
-          {
-            bs.push(ps.pop());
-          }
-          for (let i = 0; i < bs.length; i++)
-          {
-            gc.fillStyle = rgbStr(rgbs[i].concat([a]));
-            gc.beginPath();
-            gc.arc(bs[i].x, bs[i].y, r, 0, Math.PI*2);
-            gc.closePath();
-            gc.fill();
-          }
-        }
-      });
+	arms.push({
+		r:    r,
+		move: move,
+		hit:  hit,
+		u:    function() { return u },  // position
+		v:    function() { return v },  // velocity
+		s:    function() { return s },  // scalar
+		a:    function() { return a },  // scalar
+		on:   function() { return a > 0 },
+
+		draw: function()
+		{
+			if (0 < ps.length && rand(1, 50) % 3 == 0)
+			{
+				bs.push(ps.pop());
+			}
+			for (let i = 0; i < bs.length; i++)
+			{
+				gc.fillStyle = rgbStr(rgbs[i].concat([a]));
+				gc.beginPath();
+				gc.arc(bs[i].x, bs[i].y, r, 0, Math.PI*2);
+				gc.closePath();
+				gc.fill();
+			}
+		}
+	});
 }
 
 //-----------------------------------------------
 
 function shield(x, y)
 {
-      var p  = vec(x, y);
-      var r  = 8;
-      var id = rand(0, 99999999);
+	var p  = vec(x, y);
+	var r  = 8;
+	var id = rand(0, 99999999);
 
-      var move = function() { };  // doesn't move
+	var move = function() { };  // doesn't move
 
-      var draw = function()
-      {
-        drawBonus(p, [0, 0, 255, 0.75]);
-      };
+	var draw = function()
+	{
+		drawBonus(p, [0, 0, 255, 0.75]);
+	};
 
-      var hit = function()
-      {
-        if (ship.cloaked())
-        {
-          return false;
-        }
-        var cc = ship.circumcircle();
-        return distSquared(p, cc.u) < Math.pow(cc.r + r, 2);
-      };
+	var hit = function()
+	{
+		if (ship.cloaked())
+		{
+			return false;
+		}
+		var cc = ship.circumcircle();
+		return distSquared(p, cc.u) < Math.pow(cc.r + r, 2);
+	};
 
-      var bonus = function()
-      {
-        ship.setShield(50);
-        sound('shield');
-      };
+	var bonus = function()
+	{
+		ship.setShield(50);
+		sound('shield');
+	};
 
-      return {
-        p:      function() { return p  },
-        r:      function() { return r  },
-        id:     function() { return id },
-        move:   function() {  move()   },
-        draw:   function() {  draw()   },
-        hit:    hit,
-        bonus:  bonus
-      };
+	return {
+		p:      function() { return p  },
+		r:      function() { return r  },
+		id:     function() { return id },
+		move:   function() {  move()   },
+		draw:   function() {  draw()   },
+		hit:    hit,
+		bonus:  bonus
+	};
 }
 
 function cloak(x, y)
 {
-      var p  = vec(x, y);
-      var r  = 10;
-      var id = rand(0, 99999999);
+	var p  = vec(x, y);
+	var r  = 10;
+	var id = rand(0, 99999999);
 
-      var move = function() { };  // doesn't move
+	var move = function() { };  // doesn't move
 
-      var draw = function()
-      {
-        drawBonus(p, [255, 0, 0, 0.75]);
-      };
+	var draw = function()
+	{
+		drawBonus(p, [255, 0, 0, 0.75]);
+	};
 
-      var hit = function()
-      {
-        if (ship.shielded())
-        {
-          return false;
-        }
-        var cc = ship.circumcircle();
-        return distSquared(p, cc.u) < Math.pow(cc.r + r, 2);
-      };
+	var hit = function()
+	{
+		if (ship.shielded())
+		{
+			return false;
+		}
+		var cc = ship.circumcircle();
+		return distSquared(p, cc.u) < Math.pow(cc.r + r, 2);
+	};
 
-      var bonus = function()
-      {
-        ship.cloak();
-        sound('cloak');
-      };
+	var bonus = function()
+	{
+		ship.cloak();
+		sound('cloak');
+	};
 
-      return {
-        p:      function() { return p  },
-        r:      function() { return r  },
-        id:     function() { return id },
-        move:   function() {  move()   },
-        draw:   function() {  draw()   },
-        hit:    hit,
-        bonus:  bonus
-      };
+	return {
+		p:      function() { return p  },
+		r:      function() { return r  },
+		id:     function() { return id },
+		move:   function() {  move()   },
+		draw:   function() {  draw()   },
+		hit:    hit,
+		bonus:  bonus
+	};
 }
 
 function money(x, y)
 {
-      var p  = vec(x, y);
-      var r  = 8;
-      var id = rand(0, 99999999);
+	var p  = vec(x, y);
+	var r  = 8;
+	var id = rand(0, 99999999);
 
-      var move = function() { };  // doesn't move
+	var move = function() { };  // doesn't move
 
-      var draw = function()
-      {
-        drawBonus(p, [0, 255, 0, 0.75]);
-      };
+	var draw = function()
+	{
+		drawBonus(p, [0, 255, 0, 0.75]);
+	};
 
-      var hit = function()
-      {
-        var cc = ship.circumcircle();
-        return distSquared(p, cc.u) < Math.pow(cc.r, 2);
-      };
+	var hit = function()
+	{
+		var cc = ship.circumcircle();
+		return distSquared(p, cc.u) < Math.pow(cc.r, 2);
+	};
 
-      var bonus = function()
-      {
-        score += 625;
-        sound('money');
-      };
+	var bonus = function()
+	{
+		score += 625;
+		sound('money');
+	};
 
-      return {
-        p:      function() { return p  },
-        r:      function() { return r  },
-        id:     function() { return id },
-        move:   function() {  move()   },
-        draw:   function() {  draw()   },
-        hit:    hit,
-        bonus:  bonus
-      };
+	return {
+		p:      function() { return p  },
+		r:      function() { return r  },
+		id:     function() { return id },
+		move:   function() {  move()   },
+		draw:   function() {  draw()   },
+		hit:    hit,
+		bonus:  bonus
+	};
 }
 
 //---------------------------------------------------
 
 function itemFactory(items)
 {
-      return function()
-      {
-        if (Math.random() < 0.0005)
-        {
-          items.push(temple(butterfly(100)));
-        }
-        if (Math.random() < 0.001)
-        {
-          var p = ['c','d','g','e','f'][rand(0, 5)];
-          items.push(sniper(PATHS[p], 20));
-        }
-        if (Math.random() < 0.0007)
-        {
-          items.push(shield(rand(70, XRES - 70),
-            rand(70, YRES - 70)));
-        }
-        if (Math.random() < 0.0007)
-        {
-          items.push(cloak(rand(70, XRES - 70),
-            rand(70, YRES - 70)));
-        }
-        if (Math.random() < 0.0007)
-        {
-          items.push(money(rand(70, XRES - 70),
-            rand(70, YRES - 70)));
-        }
-      };
+	return function()
+	{
+		if (Math.random() < 0.0005)
+		{
+			items.push(temple(butterfly(100)));
+		}
+		if (Math.random() < 0.001)
+		{
+			var p = ['c','d','g','e','f'][rand(0, 5)];
+			items.push(sniper(PATHS[p], 20));
+		}
+		if (Math.random() < 0.0007)
+		{
+			items.push(shield(rand(70, XRES - 70), rand(70, YRES - 70)));
+		}
+		if (Math.random() < 0.0007)
+		{
+			items.push(cloak(rand(70, XRES - 70), rand(70, YRES - 70)));
+		}
+		if (Math.random() < 0.0007)
+		{
+			items.push(money(rand(70, XRES - 70), rand(70, YRES - 70)));
+		}
+	};
 }
 
-//---------------------------------------------------
+//----------------------------------------------------------------------
 
 function star()
 {
-      var x2 = XRES + XRES / 2;
-      var y2 = YRES + YRES / 2;
+	var x2 = XRES + XRES / 2;
+	var y2 = YRES + YRES / 2;
 
-      var u = vec(rand(-x2, x2), rand(-y2, y2));
-      var a = rand(0, 2) ? 0.5 : 0.9;
-      var s = a < 0.7 ? 1.25 : 1.75;
+	var u = vec(rand(-x2, x2), rand(-y2, y2));
+	var a = rand(0, 2) ? 0.5 : 0.9;
+	var s = a < 0.7 ? 1.25 : 1.75;
 
-      var draw = function()
-      {
-        gc.fillStyle = 'rgba(255, 255, 255,' + a + ')';
-        gc.fillRect(u.x, u.y, 2, 2);
-      };
+	var draw = function()
+	{
+		gc.fillStyle = 'rgba(255, 255, 255,' + a + ')';
+		gc.fillRect(u.x, u.y, 2, 2);
+	};
 
-      var move = function()
-      {
-        u = u.add(starFieldU.mult(s));
-      };
+	var move = function()
+	{
+		u = u.add(starFieldU.mult(s));
+	};
 
-      return {
-        u: u,
-        draw: draw,
-        move: move
-      };
+	return {
+		u: u,
+		draw: draw,
+		move: move
+	};
 }
 
 function makeStars()
 {
-      for (let i = 0; i < 1000; i++)
-      {
-        STARS.push(star());
-      }
+	for (let i = 0; i < 1000; i++)
+	{
+		STARS.push(star());
+	}
 }
 
 //-----------------------------------------------
 
 function loadSounds()
 {
-      SNDS['bomb']    = new Audio('/sounds/space-evader/bomb.ogg');
-      SNDS['torpedo'] = new Audio('/sounds/space-evader/torpedo.ogg');
-      SNDS['orb']     = new Audio('/sounds/space-evader/orb.ogg');
-      SNDS['death']   = new Audio('/sounds/space-evader/death.ogg');
-      SNDS['shield']  = new Audio('/sounds/space-evader/shield.ogg');
-      SNDS['cloak']   = new Audio('/sounds/space-evader/cloak.ogg');
-      SNDS['money']   = new Audio('/sounds/space-evader/money.ogg');
+	SNDS['bomb']    = new Audio('/sounds/space-evader/bomb.ogg');
+	SNDS['torpedo'] = new Audio('/sounds/space-evader/torpedo.ogg');
+	SNDS['orb']     = new Audio('/sounds/space-evader/orb.ogg');
+	SNDS['death']   = new Audio('/sounds/space-evader/death.ogg');
+	SNDS['shield']  = new Audio('/sounds/space-evader/shield.ogg');
+	SNDS['cloak']   = new Audio('/sounds/space-evader/cloak.ogg');
+	SNDS['money']   = new Audio('/sounds/space-evader/money.ogg');
 
-      SNDS['bomb'].volume    = 0.2;
-      SNDS['torpedo'].volume = 0.15;
-      SNDS['orb'].volume     = 0.1;
-      SNDS['death'].volume   = 0.2;
-      SNDS['shield'].volume  = 0.2;
-      SNDS['cloak'].volume   = 0.2;
-      SNDS['money'].volume   = 0.2;
+	SNDS['bomb'].volume    = 0.2;
+	SNDS['torpedo'].volume = 0.15;
+	SNDS['orb'].volume     = 0.1;
+	SNDS['death'].volume   = 0.2;
+	SNDS['shield'].volume  = 0.2;
+	SNDS['cloak'].volume   = 0.2;
+	SNDS['money'].volume   = 0.2;
 
-      for (let k in SNDS)
-      {
-        SNDS[k].load();
-      }
+	for (let k in SNDS)
+	{
+		SNDS[k].load();
+	}
 }
 
 function sound(s)
 {
-      var snd = SNDS[s];
+	let snd = SNDS[s];
 
-      if (snd.currentTime == 0 || snd.ended)
-      {
-        snd.play();
-      }
+	if (snd.currentTime == 0 || snd.ended)
+	{
+		snd.play();
+	}
 }
 
 //-----------------------------------------------
 
 function pathLen(ps)
 {
-      var d = 0;
+	let d = 0;
 
-      for (let i = 0; i < ps.length - 1; i++)
-      {
-        d += dist(ps[i], ps[i+1]);
-      }
-      return d;
-    }
+	for (let i = 0; i < ps.length - 1; i++)
+	{
+		d += dist(ps[i], ps[i+1]);
+	}
+	return d;
+}
 
-    function justify(ps, e)
-    {
-      var f  = fix(casteljau, ps);
-      var qs = range(0, 1, e).map(f);
-      var d  = pathLen(qs) / 150;
+function justify(ps, e)
+{
+	var f  = fix(casteljau, ps);
+	var qs = range(0, 1, e).map(f);
+	var d  = pathLen(qs) / 150;
+	var ds = range(0, d * 150, d);
+	var ts = [];
+	var i  = 0;
 
-      var ds = range(0, d * 150, d);
-      var ts = [];
-      var i  = 0;
-      qs     = [ps[0]];
+	qs = [ps[0]];
 
-      for (let t = 0.0005; t < 1; t += 0.0005)
-      {
-        qs.push(f(t));
+	for (let t = 0.0005; t < 1; t += 0.0005)
+	{
+		qs.push(f(t));
 
-        if (pathLen(qs) > ds[i])
-        {
-          ts.push(t);
-          i++;
-        }
-      }
-      return ts;
+		if (pathLen(qs) > ds[i])
+		{
+			ts.push(t);
+			i++;
+		}
+	}
+	return ts;
 }
 
 function rotate(pgon, degree, o)
 {
-      o = o ? o : centroid(pgon);
+	o = o ? o : centroid(pgon);
 
-      return pgon.map(function(p)
-      {
-        return p.rot(o, degree);
-      });
+	return pgon.map(function(p)
+	{
+		return p.rot(o, degree);
+	});
 }
 
 function centroid(ps)  // arithmetic mean of ps
 {
-      var u = vec(0,0);
+	let u = vec(0,0);
 
-      ps.map(function(p)
-      {
-        u = u.add(p);
-      });
-      return u.div(ps.length);
+	ps.map(function(p)
+	{
+		u = u.add(p);
+	});
+	return u.div(ps.length);
 }
 
 function spriteCentroid(trigons)
 {
-      var us = [];
+	var us = [];
 
-      trigons.map(function(t)
-      {
-        us.push(vec(t[0], t[1]));
-        us.push(vec(t[2], t[3]));
-        us.push(vec(t[4], t[5]));
-      });
-      return centroid(us);
+	trigons.map(function(t)
+	{
+		us.push(vec(t[0], t[1]));
+		us.push(vec(t[2], t[3]));
+		us.push(vec(t[4], t[5]));
+	});
+	return centroid(us);
 }
 
 function scaleSprite(s, sprite)  // broken
 {
-      var rgbs = sprite.map(function(a)
-      {
-        return a.pop();
-      });
-      sprite = sprite.reduce(function(a,b)
-      {
-        return a.concat(b);
-      });
-      var us = [];
+	var rgbs = sprite.map(function(a)
+	{
+		return a.pop();
+	});
+	sprite = sprite.reduce(function(a,b)
+	{
+		return a.concat(b);
+	});
+	var us = [];
 
-      for (let i = 0; i < sprite.length; i += 2)
-      {
-        us.unshift(vec(sprite[i], sprite[i+1]));
-      }
-      var vs  = scale(s, us, centroid(us));
-      var xys = [];
+	for (let i = 0; i < sprite.length; i += 2)
+	{
+		us.unshift(vec(sprite[i], sprite[i+1]));
+	}
+	var vs  = scale(s, us, centroid(us));
+	var xys = [];
 
-      vs.map(function(v)
-      {
-        xys.unshift(v.x);
-        xys.unshift(v.y);
-      });
-      var ret = [];
+	vs.map(function(v)
+	{
+		xys.unshift(v.x);
+		xys.unshift(v.y);
+	});
+	var ret = [];
 
-      for (let i = 0; i < xys.length; i += 6)
-      {
-        ret.unshift(xys.slice(i, i+6));
-      }
-      for (let i = 0; i < ret.length; i++)
-      {
-        ret[i].push(rgbs[i]);
-      }
-      return ret;
+	for (let i = 0; i < xys.length; i += 6)
+	{
+		ret.unshift(xys.slice(i, i+6));
+	}
+	for (let i = 0; i < ret.length; i++)
+	{
+		ret[i].push(rgbs[i]);
+	}
+	return ret;
 }
 
 function scale(s, ps, o)  // scale points
 {
-      var o = o ? o : centroid(ps);
+	var o = o ? o : centroid(ps);
 
-      var qs = ps.map(function(p)
-      {
-        return vec(p.x, p.y).sub(o);
-      });
-      return qs.map(function(q)
-      {
-        return q.mult(s);
+	var qs = ps.map(function(p)
+	{
+		return vec(p.x, p.y).sub(o);
+	});
+	return qs.map(function(q)
+	{
+		return q.mult(s);
 
-      }).map(function(p)
-      {
-        var t = p.add(o);
-        return { x: t.x, y: t.y };
-        //return p.add(o);
-      });
+	}).map(function(p)
+	{
+		var t = p.add(o);
+		return { x: t.x, y: t.y };
+		//return p.add(o);
+	});
 }
 
 function bounds(ps)
 {
-      var xs = ps.map(function(p) { return p.x; });
-      var ys = ps.map(function(p) { return p.y; });
+	var xs = ps.map(function(p) { return p.x; });
+	var ys = ps.map(function(p) { return p.y; });
 
-      return {
-        x:  Math.min.apply(null, xs),
-        y:  Math.min.apply(null, ys),
-        x2: Math.max.apply(null, xs),
-        y2: Math.max.apply(null, ys)
-      };
+	return {
+		x:  Math.min.apply(null, xs),
+		y:  Math.min.apply(null, ys),
+		x2: Math.max.apply(null, xs),
+		y2: Math.max.apply(null, ys)
+	};
 }
 
 function rebound(obj)
 {
-      var p = obj.rect || bounds(obj.ps());
+	let p = obj.rect || bounds(obj.ps());
 
-      if (p.x < 1 || p.x2 > XRES - 1)
-      {
-        var dx = p.x < 1 ? 6 : -6;
-        obj.setU(vec(-obj.u().x, obj.u().y));
-        ship.translate(dx, 0);
-        return true;
-      }
-      else if (p.y < 1 || p.y2 > YRES - 1)
-      {
-        var dy = p.y < 1 ? 6 : -6;
-        obj.setU(vec(obj.u().x, -obj.u().y));
-        ship.translate(0, dy);
-        return true;
-      }
-      return false;
+	if (p.x < 1 || p.x2 > XRES - 1)
+	{
+		let dx = p.x < 1 ? 6 : -6;
+
+		obj.setU(vec(-obj.u().x, obj.u().y));
+		ship.translate(dx, 0);
+		return true;
+	}
+	else if (p.y < 1 || p.y2 > YRES - 1)
+	{
+		let dy = p.y < 1 ? 6 : -6;
+
+		obj.setU(vec(obj.u().x, -obj.u().y));
+		ship.translate(0, dy);
+		return true;
+	}
+	return false;
 }
 
 //---------------------------------------------
 
 function ballBounds(b)
 {
-      return {
-        x:  b.x - RADIUS,
-        y:  b.y - RADIUS,
-        x2: b.x + RADIUS,
-        y2: b.y + RADIUS
-      };
+	return {
+		x:  b.x - RADIUS,
+		y:  b.y - RADIUS,
+		x2: b.x + RADIUS,
+		y2: b.y + RADIUS
+	};
 }
 
 function inRect(r, p)
 {
-      return r.x < p.x && p.x < r.x2
-          && r.y < p.y && p.y < r.y2;
+	return r.x < p.x && p.x < r.x2
+		&& r.y < p.y && p.y < r.y2;
 }
 
 function inScreen(p)
 {
-      return 0 < p.x && p.x < XRES
-          && 0 < p.y && p.y < YRES;
+	return 0 < p.x && p.x < XRES
+		&& 0 < p.y && p.y < YRES;
 }
 
 function insidePolygon(p, ps)
 {
-      var ret = true;
-      var b   = ccw(p, ps[0], ps[1]) < 0;
+	var ret = true;
+	var b   = ccw(p, ps[0], ps[1]) < 0;
 
-      for (let i = 1; i < ps.length - 1; i++)
-      {
-        ret &= (b == (ccw(p, ps[i], ps[i+1]) < 0));
-      }
-      return ret;
+	for (let i = 1; i < ps.length - 1; i++)
+	{
+		ret &= (b == (ccw(p, ps[i], ps[i+1]) < 0));
+	}
+	return ret;
 }
 
 function ccw(a, b, c)  // 'counterclockwise'
 {
-      return (b.x - a.x) * (c.y - a.y)
-           - (b.y - a.y) * (c.x - a.x);
+	return (b.x - a.x) * (c.y - a.y)
+		 - (b.y - a.y) * (c.x - a.x);
 }
 
 function zero(n)
 {
-      return 0.01 > n && n > -0.01;
+	return 0.01 > n && n > -0.01;
 }
 
 function equal(p,q)
 {
-      return p.x == q.x || p.y == q.y;
+	return p.x == q.x || p.y == q.y;
 }
 
 function dist(p,q)
 {
-      return Math.sqrt(Math.pow(q.x - p.x, 2)
-           + Math.pow(q.y - p.y, 2));
+	return Math.sqrt(Math.pow(q.x - p.x, 2)
+		 + Math.pow(q.y - p.y, 2));
 }
 
 function distSquared(p, q)  // more efficient
 {
-      return Math.pow(q.x - p.x, 2)
-           + Math.pow(q.y - p.y, 2);
+	return Math.pow(q.x - p.x, 2)
+		 + Math.pow(q.y - p.y, 2);
 }
 
 function inPgon(u, pgon)
 {
-      if (!inRect(bounds(pgon), u))
-      {
-        return false;
-      }
-      return insidePolygon(u, pgon);
+	if (!inRect(bounds(pgon), u))
+	{
+		return false;
+	}
+	return insidePolygon(u, pgon);
 };
 
 function angle(p,q)  // not sure this works
@@ -1388,7 +1397,7 @@ function angle(p,q)  // not sure this works
 
 function pruneArms()
 {
-	ARMS = ARMS.filter(function(a)
+	arms = arms.filter(function(a)
 	{
 		return a.on() && inScreen(a.u());
 	});
@@ -1511,8 +1520,7 @@ function butterfly(s)   // Temple Fay's curve
 
 function vec(x, y)
 {
-	return
-	{
+	return {
 		x: x,
 		y: y,
 
